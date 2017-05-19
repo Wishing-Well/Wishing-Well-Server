@@ -18,6 +18,8 @@
   "homepage": "https://github.com/Wishing-Well/Wishing-Well#readme",
   "dependencies": {
     "express": "^4.15.3",
+    "react": "^15.5.4",
+    "react-native": "^0.44.0",
     "sequelize": "^3.30.4"
   }
 }
