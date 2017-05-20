@@ -47,10 +47,10 @@ module.exports = function(sequelize, DataTypes) {
           as: 'Author',
         });
         User.hasMany(models.Well, {
-          as: 'Organizor',
+          as: 'Organizer',
         });
         User.hasMany(model.Well, {
-          as: 'Donator',
+          as: 'Donor',
         });
       }
     }
