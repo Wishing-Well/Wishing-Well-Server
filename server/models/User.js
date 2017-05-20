@@ -30,16 +30,29 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: false,
     },
+    coin_inventory: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: false,
+    },
+    coins_thrown: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: false,
+    },
   }, {
     classMethods: {
-/*      associate: function(models) {
-        User.hasMany(models.Card, {
-          as: 'Creator',
+      associate: function(models) {
+        User.hasMany(models.Message, {
+          as: 'Author',
         });
-        User.hasMany(models.Card, {
-          as: 'Assignee',
+        User.hasMany(models.Well, {
+          as: 'Organizor',
         });
-      }*/
+        User.hasMany(model.Well, {
+          as: 'Donator',
+        });
+      }
     }
   });
 
