@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "A mobile-game/utility meant to promote donating and charity to local businesses",
   "main": "index.js",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "react-native start"
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -23,5 +24,14 @@
     "react-native": "^0.44.0",
     "react-redux": "^5.0.5",
     "sequelize": "^3.30.4"
+  },
+  "devDependencies": {
+    "babel-jest": "20.0.3",
+    "babel-preset-react-native": "1.9.2",
+    "jest": "20.0.3",
+    "react-test-renderer": "16.0.0-alpha.6"
+  },
+  "jest": {
+    "preset": "react-native"
   }
 }
