@@ -1,7 +1,7 @@
 module.exports = function(sequelize, DataTypes) {
   var User = sequelize.define("User", {
     username: {
-      type: DataTypes.VARCHAR(20),
+      type: DataTypes.STRING(20),
       allowNull: false,
       unique: true,
     },
@@ -11,22 +11,22 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
     },
     email: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(100),
       allowNull: false,
       unique: false,
     },
     telephone: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(20),
       allowNull: true,
       unique: false,
     },
     first_name: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(20),
       allowNull: true,
       unique: false,
     },
     last_name: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(20),
       allowNull: true,
       unique: false,
     },
