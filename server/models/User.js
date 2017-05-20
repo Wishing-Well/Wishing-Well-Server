@@ -49,7 +49,7 @@ module.exports = function(sequelize, DataTypes) {
         User.hasMany(models.Well, {
           as: 'Organizer',
         });
-        User.hasMany(model.Well, {
+        User.hasMany(models.Throw, {
           as: 'Donor',
         });
       }

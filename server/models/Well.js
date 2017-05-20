@@ -11,12 +11,12 @@ module.exports = function(sequelize, DataTypes) {
       unique: false,
     },
     funding_target: {
-      type: DataTypes.MONEY,
+      type: DataTypes.DOUBLE,
       allowNull: true,
       unique: false,
     },
     current_amount: {
-      type: DataTypes.MONEY,
+      type: DataTypes.DOUBLE,
       allowNull: true,
       unique: false,
     },
@@ -35,7 +35,7 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         Well.hasMany(models.Throw);
         Well.hasOne(models.Message);
-        Well.hasOne(models.User,{
+        Well.belongsTo(models.User,{
           as: 'Organizer',
         });
       }
