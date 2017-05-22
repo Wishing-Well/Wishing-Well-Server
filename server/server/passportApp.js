@@ -11,11 +11,11 @@ module.exports = () => {
   app.use(passport.session());
 
   passport.use(new LocalStrategy (
-    function(username, password, done) {
+    function(email, password, done) {
       console.log('runs before serializing');
       User.findOne({
         where: {
-          username: username
+          email: email
         }
       }).then ( user => {
         if (user === null) {
@@ -42,7 +42,7 @@ module.exports = () => {
     // building the object to serialize to save
     return done(null, {
       id: user.id,
-      username: user.username
+      username: user.email
     });
   });
 
@@ -65,7 +65,7 @@ module.exports = () => {
       next();
     }else {
       console.log('you bad!!!!');
-      res.redirect('/login');
+      //res.redirect('/login');
     }
   }
 };
