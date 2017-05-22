@@ -1,6 +1,5 @@
 // Init Passport
 const app = require('./expressApp.js');
-const salts = 10;
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
