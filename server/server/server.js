@@ -4,7 +4,7 @@ const db = require('../models');
 const PORT = process.env.PORT || 4000;
 
 const server = app.listen(PORT, () => {
-  db.sequelize.sync();
+  db.sequelize.sync({force: true});
   console.log(`Server started on port ${PORT}`);
 });
 

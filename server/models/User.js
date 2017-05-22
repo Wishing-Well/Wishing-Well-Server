@@ -15,14 +15,9 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: false,
     },
-    first_name: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
-      unique: false,
-    },
-    last_name: {
-      type: DataTypes.STRING(20),
-      allowNull: true,
+    full_name: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
       unique: false,
     },
     coin_inventory: {

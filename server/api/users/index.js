@@ -2,6 +2,8 @@
 const express = require('express');
 const Users = express.Router();
 const { User } = require('../../models');
+const bcrypt = require('bcrypt');
+const {saltRounds} = require('../../server/constants');
 
 Users.get('/', (req, res) => {
   User.all().then( (users) => {
@@ -20,17 +22,26 @@ Users.get('/:id', (req, res) => {
 });
 
 Users.post('/', (req, res) => {
-  User.create({
-    email: req.body.email,
-    password: req.body.password
-  })
-  .then( (user) => {
-    res.json(user);
-  })
-  .catch( (err) => {
-    res.json(err);
+  bcrypt.genSalt(saltRounds, function(err, salt) {
+    bcrypt.hash(req.body.password, salt, function(err, hash) {
+      User.create({
+        email: req.body.email,
+        full_name: req.body.full_name,
+        password: hash
+      })
+      .then( (user) => {
+        console.log(user);
+        res.json({success: true});
+      })
+      .catch((err) => {
+        console.log(err);
+        console.log(req.body);
+        res.json({success: false});
+      });
+    });
   });
 });
+
 
 Users.delete('/:id', (req, res) => {
   console.log(req.params.id);
