@@ -21,7 +21,7 @@ Users.get('/:id', (req, res) => {
 
 Users.post('/', (req, res) => {
   User.create({
-    username: req.body.username,
+    email: req.body.email,
     password: req.body.password
   })
   .then( (user) => {
