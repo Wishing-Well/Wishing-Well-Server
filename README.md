@@ -14,4 +14,5 @@ The redis example fie will need you to create a secrete string for authenticatio
 
 ##  Getting Started
 In the server folder, the index.js will run the server.  Use the command below to start the server: 
+
 ``` nodemon server/index.js ```
