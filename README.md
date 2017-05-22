@@ -5,14 +5,10 @@ It will have user authentication, user information, and provide routes for the f
 
 ##Prerequisites
 Modules used for this server:
-
-ExpressJS
-
-Redis
-
-Passport
-
-methodOverride
+-ExpressJS
+-Redis
+-Passport
+-methodOverride
 
 The redis example fie will need you to create a secrete string for authentication purposes.
  
