@@ -4,6 +4,7 @@ const Users = express.Router();
 const { User } = require('../../models');
 const bcrypt = require('bcrypt');
 const {saltRounds} = require('../../server/constants');
+const passport = require('passport');
 
 Users.get('/', (req, res) => {
   User.all().then( (users) => {
@@ -11,7 +12,7 @@ Users.get('/', (req, res) => {
   });
 });
 
-Users.get('/:id', (req, res) => {
+/*Users.get('/:id', (req, res) => {
   User.findOne({
     where: {
       id: req.params.id
@@ -19,7 +20,7 @@ Users.get('/:id', (req, res) => {
   }).then( (user) => {
     res.json(user);
   });
-});
+});*/
 
 Users.post('/', (req, res) => {
   bcrypt.genSalt(saltRounds, function(err, salt) {
@@ -42,6 +43,11 @@ Users.post('/', (req, res) => {
   });
 });
 
+Users.route('/login')
+      .post(passport.authenticate('local', {
+        successRedirect: '/gallery',
+        failureRedirect: '/login'
+      }));
 
 Users.delete('/:id', (req, res) => {
   console.log(req.params.id);

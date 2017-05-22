@@ -3,6 +3,7 @@ const app = require('./expressApp.js');
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const { User } = require('../models');
 
 module.exports = () => {
 
@@ -41,7 +42,7 @@ module.exports = () => {
     // building the object to serialize to save
     return done(null, {
       id: user.id,
-      username: user.email
+      email: user.email
     });
   });
 

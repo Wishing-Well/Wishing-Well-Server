@@ -22,11 +22,13 @@ module.exports = function(sequelize, DataTypes) {
     },
     coin_inventory: {
       type: DataTypes.INTEGER,
+      default: 0,
       allowNull: true,
       unique: false,
     },
     coins_thrown: {
       type: DataTypes.INTEGER,
+      default: 0,
       allowNull: true,
       unique: false,
     },
