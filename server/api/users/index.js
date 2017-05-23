@@ -7,17 +7,18 @@ const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
 
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
+const REGISTRATION_USER_ALREADY_EXISTS = 'REGISTRATION_USER_ALREADY_EXISTS';
 const LOGIN_INVALID = 'LOGIN_INVALID';
 
 // email validation
-const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
+const EMAIL_REGEX = /[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})/gi;
 const EMAIL_MAX_LENGTH = 100;
 const EMAIL_FORBIDDEN_WORD = 'EMAIL_FORBIDDEN_WORD';
 const EMAIL_INVALID_STRING_FORMAT = 'EMAIL_INVALID_STRING_FORMAT';
 const EMAIL_INVALID_LENGTH = 'EMAIL_INVALID_LENGTH';
 
 function validateEmail(email, res) {
-  if (!EMAIL_REGEX.test(email)) {
+  if (!email.match(EMAIL_REGEX)) {
     res.json({success: false, error: EMAIL_INVALID_STRING_FORMAT});
     return false;
   }
@@ -63,10 +64,11 @@ function validateFullName(fullName, res) {
 
 // password validation
 const PASSWORD_MAX_LENGTH = 500;
+const PASSWORD_MIN_LENGTH = 6;
 const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
 
 function validatePassword(password, res) {
-  if (password.length > PASSWORD_MAX_LENGTH) {
+  if (password.length > PASSWORD_MAX_LENGTH || password.length < PASSWORD_MIN_LENGTH) {
     res.json({success: false, error: PASSWORD_INVALID_LENGTH});
     return false;
   }
@@ -92,6 +94,7 @@ Users.get('/', (req, res) => {
 });*/
 
 Users.post('/create', (req, res) => {
+  console.log(req.body)
   if (!validateEmail(req.body.email, res)        ||
       !validateFullName(req.body.full_name, res) ||
       !validatePassword(req.body.password, res)) {
@@ -109,7 +112,7 @@ Users.post('/create', (req, res) => {
         res.json({success: true, user_id: user.dataValues.id});
       })
       .catch((err) => {
-        res.json({success: false, error: SERVER_UNKNOWN_ERROR});
+        res.json({success: false, error: REGISTRATION_USER_ALREADY_EXISTS});
       });
     });
   });
