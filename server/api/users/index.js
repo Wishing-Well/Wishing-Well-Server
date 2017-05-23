@@ -76,23 +76,6 @@ function validatePassword(password, res) {
   return true;
 }
 
-
-Users.get('/', (req, res) => {
-  User.all().then( (users) => {
-    res.json(users);
-  });
-});
-
-/*Users.get('/:id', (req, res) => {
-  User.findOne({
-    where: {
-      id: req.params.id
-    }
-  }).then( (user) => {
-    res.json(user);
-  });
-});*/
-
 Users.post('/create', (req, res) => {
   console.log(req.body)
   if (!validateEmail(req.body.email, res)        ||
