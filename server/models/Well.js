@@ -18,11 +18,7 @@ module.exports = function(sequelize, DataTypes) {
     current_amount: {
       type: DataTypes.DOUBLE,
       allowNull: true,
-      unique: false,
-    },
-    start_date: {
-      type: DataTypes.DATE,
-      allowNull: true,
+      defaultValue: 0,
       unique: false,
     },
     expiration_date: {

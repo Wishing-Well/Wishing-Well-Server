@@ -25,12 +25,7 @@ Wells.post('/', (req, res) => {
     location: req.body.location,
     funding_target: req.body.funding_target,
     current_amount: req.body.current_amount,
-    start_date: req.body.start_date,
     expiration_date: req.body.expiration_date,
-    createdAt: req.body.createdAt,
-    updatedAt: req.body.updatedAt,
-    UserId: req.body.UserId,
-    OrganizerId: req.body.OrganizerId,
   })
   .then( (well) => {
     res.json(well);
