@@ -31,12 +31,9 @@ Users.post('/', (req, res) => {
         password: hash
       })
       .then( (user) => {
-        console.log(user);
         res.json({success: true});
       })
       .catch((err) => {
-        console.log(err);
-        console.log(req.body);
         res.json({success: false});
       });
     });
@@ -45,8 +42,8 @@ Users.post('/', (req, res) => {
 
 Users.route('/login')
       .post(passport.authenticate('local', {
-        successRedirect: '/gallery',
-        failureRedirect: '/login'
+        successRedirect: '/success',
+        failureRedirect: '/failure',
       }));
 
 Users.delete('/:id', (req, res) => {

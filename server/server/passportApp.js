@@ -11,11 +11,11 @@ module.exports = () => {
   app.use(passport.session());
 
   passport.use(new LocalStrategy (
-    function(email, password, done) {
+    function(username, password, done) {
       console.log('runs before serializing');
       User.findOne({
         where: {
-          email: email
+          email: username
         }
       }).then ( user => {
         if (user === null) {

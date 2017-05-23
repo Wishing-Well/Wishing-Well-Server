@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Wishing-Well/Wishing-Well#readme",
   "dependencies": {
     "bcrypt": "^1.0.2",
+    "connect-flash": "^0.1.1",
     "connect-redis": "^3.3.0",
     "express": "^4.15.3",
     "express-session": "^1.15.3",
