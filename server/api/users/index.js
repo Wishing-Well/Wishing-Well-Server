@@ -31,7 +31,7 @@ Users.post('/', (req, res) => {
         password: hash
       })
       .then( (user) => {
-        res.json({success: true});
+        res.json({success: true, user_id: user.dataValues.id});
       })
       .catch((err) => {
         res.json({success: false});
@@ -40,14 +40,34 @@ Users.post('/', (req, res) => {
   });
 });
 
-Users.route('/login')
-      .post(passport.authenticate('local', {
-        successRedirect: 'login-success',
-        failureRedirect: 'login-failure',
-      }));
+Users.post('/login',
+  passport.authenticate('local', { failWithError: true }),
+  function(req, res, next) {
+    User.findOne({
+      where: {
+        email: req.body.username
+      }
+    }).then( (user) => {
+      console.log(user);
+      res.json({success: true, user_id: user.dataValues.id});
+    });
+  },
+  function(err, req, res, next) {
+    return res.json({success: false});
+  }
+);
 
 Users.get('/login-success', (req, res) => {
-  res.json({success: true});
+  console.log(req.body);
+  User.findOne({
+    where: {
+      email: req.body.username
+    }
+  }).then( (user) => {
+    console.log(user);
+    res.json({success: true, user_id: user.dataValues.id});
+  });
+
 });
 
 Users.get('/login-failure', (req, res) => {
