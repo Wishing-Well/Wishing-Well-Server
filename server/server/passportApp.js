@@ -3,6 +3,7 @@ const app = require('./expressApp.js');
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const { User } = require('../models');
 
 module.exports = () => {
 
@@ -10,11 +11,11 @@ module.exports = () => {
   app.use(passport.session());
 
   passport.use(new LocalStrategy (
-    function(email, password, done) {
+    function(username, password, done) {
       console.log('runs before serializing');
       User.findOne({
         where: {
-          email: email
+          email: username
         }
       }).then ( user => {
         if (user === null) {
@@ -41,7 +42,7 @@ module.exports = () => {
     // building the object to serialize to save
     return done(null, {
       id: user.id,
-      username: user.email
+      email: user.email
     });
   });
 

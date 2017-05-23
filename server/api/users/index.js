@@ -4,6 +4,7 @@ const Users = express.Router();
 const { User } = require('../../models');
 const bcrypt = require('bcrypt');
 const {saltRounds} = require('../../server/constants');
+const passport = require('passport');
 
 Users.get('/', (req, res) => {
   User.all().then( (users) => {
@@ -11,7 +12,7 @@ Users.get('/', (req, res) => {
   });
 });
 
-Users.get('/:id', (req, res) => {
+/*Users.get('/:id', (req, res) => {
   User.findOne({
     where: {
       id: req.params.id
@@ -19,7 +20,7 @@ Users.get('/:id', (req, res) => {
   }).then( (user) => {
     res.json(user);
   });
-});
+});*/
 
 Users.post('/', (req, res) => {
   bcrypt.genSalt(saltRounds, function(err, salt) {
@@ -30,18 +31,28 @@ Users.post('/', (req, res) => {
         password: hash
       })
       .then( (user) => {
-        console.log(user);
         res.json({success: true});
       })
       .catch((err) => {
-        console.log(err);
-        console.log(req.body);
         res.json({success: false});
       });
     });
   });
 });
 
+Users.route('/login')
+      .post(passport.authenticate('local', {
+        successRedirect: 'login-success',
+        failureRedirect: 'login-failure',
+      }));
+
+Users.get('/login-success', (req, res) => {
+  res.json({success: true});
+});
+
+Users.get('/login-failure', (req, res) => {
+  res.json({success: false});
+});
 
 Users.delete('/:id', (req, res) => {
   console.log(req.params.id);
