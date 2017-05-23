@@ -109,7 +109,7 @@ Users.post('/create', (req, res) => {
         password: hash
       })
       .then( (user) => {
-        res.json({success: true, user_id: user.dataValues.id});
+        res.json({success: true, user: user.dataValues});
       })
       .catch((err) => {
         res.json({success: false, error: REGISTRATION_USER_ALREADY_EXISTS});
@@ -126,8 +126,7 @@ Users.post('/login',
         email: req.body.username.toLowerCase()
       }
     }).then( (user) => {
-      console.log(user);
-      res.json({success: true, user_id: user.dataValues.id});
+      res.json({success: true, user_id: user.dataValues});
     });
   },
   function(err, req, res, next) {
