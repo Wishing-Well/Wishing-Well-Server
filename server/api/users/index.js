@@ -3,8 +3,77 @@ const express = require('express');
 const Users = express.Router();
 const { User } = require('../../models');
 const bcrypt = require('bcrypt');
-const {saltRounds} = require('../../server/constants');
+const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
+
+const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
+const LOGIN_INVALID = 'LOGIN_INVALID';
+
+// email validation
+const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const EMAIL_MAX_LENGTH = 100;
+const EMAIL_FORBIDDEN_WORD = 'EMAIL_FORBIDDEN_WORD';
+const EMAIL_INVALID_STRING_FORMAT = 'EMAIL_INVALID_STRING_FORMAT';
+const EMAIL_INVALID_LENGTH = 'EMAIL_INVALID_LENGTH';
+
+function validateEmail(email) {
+  if (!EMAIL_REGEX.test(email)) {
+    res.json({success: false, error: EMAIL_INVALID_STRING_FORMAT});
+    return false;
+  }
+
+  if (email.length > EMAIL_MAX_LENGTH) {
+    res.json({success: false, error: EMAIL_INVALID_LENGTH});
+    return false;
+  }
+
+  if (BANNED_WORDS.some(v => email.toLowerCase().indexOf(v) !== -1)) {
+    res.json({success: false, error: EMAIL_FORBIDDEN_WORD});
+    return false;
+  }
+
+  return true;
+}
+
+// full_name validation
+const FULL_NAME_REGEX = /^\pL+[\pL\pZ\pP]{0,}$/;
+const FULL_NAME_MAX_LENGTH = 50;
+const FULL_NAME_FORBIDDEN_WORD = 'FULL_NAME_FORBIDDEN_WORD';
+const FULL_NAME_INVALID_STRING_FORMAT = 'FULL_NAME_INVALID_STRING_FORMAT';
+const FULL_NAME_INVALID_LENGTH = 'FULL_NAME_INVALID_LENGTH';
+
+function validateFullName(fullName) {
+  if (!FULL_NAME_REGEX.test(fullName)) {
+    res.json({success: false, error: FULL_NAME_INVALID_STRING_FORMAT});
+    return false;
+  }
+
+  if (fullName.length > FULL_NAME_MAX_LENGTH) {
+    res.json({success: false, error: FULL_NAME_INVALID_LENGTH});
+    return false;
+  }
+
+  if (BANNED_WORDS.some(v => fullName.toLowerCase().indexOf(v) !== -1)) {
+    res.json({success: false, error: FULL_NAME_FORBIDDEN_WORD});
+    return false;
+  }
+
+  return true;
+}
+
+// password validation
+const PASSWORD_MAX_LENGTH = 500;
+const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
+
+function validatePassword(password) {
+  if (password.length > PASSWORD_MAX_LENGTH) {
+    res.json({success: false, error: PASSWORD_INVALID_LENGTH});
+    return false;
+  }
+
+  return true;
+}
+
 
 Users.get('/', (req, res) => {
   User.all().then( (users) => {
@@ -22,7 +91,13 @@ Users.get('/', (req, res) => {
   });
 });*/
 
-Users.post('/', (req, res) => {
+Users.post('/create', (req, res) => {
+  if (!validateEmail(req.body.email)        ||
+      !validateFullName(req.body.full_name) ||
+      !validatePassword(req.body.password)) {
+    return;
+  }
+
   bcrypt.genSalt(saltRounds, function(err, salt) {
     bcrypt.hash(req.body.password, salt, function(err, hash) {
       User.create({
@@ -34,7 +109,7 @@ Users.post('/', (req, res) => {
         res.json({success: true, user_id: user.dataValues.id});
       })
       .catch((err) => {
-        res.json({success: false});
+        res.json({success: false, error: SERVER_UNKNOWN_ERROR});
       });
     });
   });
@@ -53,7 +128,7 @@ Users.post('/login',
     });
   },
   function(err, req, res, next) {
-    return res.json({success: false});
+    return res.json({success: false, error: LOGIN_INVALID});
   }
 );
 
