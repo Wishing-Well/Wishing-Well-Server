@@ -10,13 +10,13 @@ const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
 const LOGIN_INVALID = 'LOGIN_INVALID';
 
 // email validation
-const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+const EMAIL_REGEX = /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g;
 const EMAIL_MAX_LENGTH = 100;
 const EMAIL_FORBIDDEN_WORD = 'EMAIL_FORBIDDEN_WORD';
 const EMAIL_INVALID_STRING_FORMAT = 'EMAIL_INVALID_STRING_FORMAT';
 const EMAIL_INVALID_LENGTH = 'EMAIL_INVALID_LENGTH';
 
-function validateEmail(email) {
+function validateEmail(email, res) {
   if (!EMAIL_REGEX.test(email)) {
     res.json({success: false, error: EMAIL_INVALID_STRING_FORMAT});
     return false;
@@ -36,13 +36,13 @@ function validateEmail(email) {
 }
 
 // full_name validation
-const FULL_NAME_REGEX = /^\pL+[\pL\pZ\pP]{0,}$/;
+const FULL_NAME_REGEX = /^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$/;
 const FULL_NAME_MAX_LENGTH = 50;
 const FULL_NAME_FORBIDDEN_WORD = 'FULL_NAME_FORBIDDEN_WORD';
 const FULL_NAME_INVALID_STRING_FORMAT = 'FULL_NAME_INVALID_STRING_FORMAT';
 const FULL_NAME_INVALID_LENGTH = 'FULL_NAME_INVALID_LENGTH';
 
-function validateFullName(fullName) {
+function validateFullName(fullName, res) {
   if (!FULL_NAME_REGEX.test(fullName)) {
     res.json({success: false, error: FULL_NAME_INVALID_STRING_FORMAT});
     return false;
@@ -65,7 +65,7 @@ function validateFullName(fullName) {
 const PASSWORD_MAX_LENGTH = 500;
 const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
 
-function validatePassword(password) {
+function validatePassword(password, res) {
   if (password.length > PASSWORD_MAX_LENGTH) {
     res.json({success: false, error: PASSWORD_INVALID_LENGTH});
     return false;
@@ -92,16 +92,16 @@ Users.get('/', (req, res) => {
 });*/
 
 Users.post('/create', (req, res) => {
-  if (!validateEmail(req.body.email)        ||
-      !validateFullName(req.body.full_name) ||
-      !validatePassword(req.body.password)) {
+  if (!validateEmail(req.body.email, res)        ||
+      !validateFullName(req.body.full_name, res) ||
+      !validatePassword(req.body.password, res)) {
     return;
   }
 
   bcrypt.genSalt(saltRounds, function(err, salt) {
     bcrypt.hash(req.body.password, salt, function(err, hash) {
       User.create({
-        email: req.body.email,
+        email: req.body.email.toLowerCase(),
         full_name: req.body.full_name,
         password: hash
       })
@@ -120,7 +120,7 @@ Users.post('/login',
   function(req, res, next) {
     User.findOne({
       where: {
-        email: req.body.username
+        email: req.body.username.toLowerCase()
       }
     }).then( (user) => {
       console.log(user);
