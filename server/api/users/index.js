@@ -77,13 +77,11 @@ function validatePassword(password, res) {
 }
 
 Users.post('/create', (req, res) => {
-  console.log(req.body)
   if (!validateEmail(req.body.email, res)        ||
       !validateFullName(req.body.full_name, res) ||
       !validatePassword(req.body.password, res)) {
     return;
   }
-
   bcrypt.genSalt(saltRounds, function(err, salt) {
     bcrypt.hash(req.body.password, salt, function(err, hash) {
       User.create({
@@ -117,25 +115,7 @@ Users.post('/login',
   }
 );
 
-Users.get('/login-success', (req, res) => {
-  console.log(req.body);
-  User.findOne({
-    where: {
-      email: req.body.username
-    }
-  }).then( (user) => {
-    console.log(user);
-    res.json({success: true, user_id: user.dataValues.id});
-  });
-
-});
-
-Users.get('/login-failure', (req, res) => {
-  res.json({success: false});
-});
-
 Users.delete('/:id', (req, res) => {
-  console.log(req.params.id);
   User.destroy({
     where: {
       id: req.params.id
@@ -145,7 +125,7 @@ Users.delete('/:id', (req, res) => {
     res.json({success: true});
   })
   .catch( (err) => {
-    res.json({sucess: false});
+    res.json({success: false});
   });
 });
 
