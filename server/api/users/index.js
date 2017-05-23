@@ -42,9 +42,17 @@ Users.post('/', (req, res) => {
 
 Users.route('/login')
       .post(passport.authenticate('local', {
-        successRedirect: '/success',
-        failureRedirect: '/failure',
+        successRedirect: 'login-success',
+        failureRedirect: 'login-failure',
       }));
+
+Users.get('/login-success', (req, res) => {
+  res.json({success: true});
+});
+
+Users.get('/login-failure', (req, res) => {
+  res.json({success: false});
+});
 
 Users.delete('/:id', (req, res) => {
   console.log(req.params.id);
