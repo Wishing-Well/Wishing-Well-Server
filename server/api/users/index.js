@@ -107,7 +107,7 @@ Users.post('/login',
         email: req.body.username.toLowerCase()
       }
     }).then( (user) => {
-      res.json({success: true, user_id: user.dataValues});
+      res.json({success: true, user: user.dataValues});
     });
   },
   function(err, req, res, next) {
