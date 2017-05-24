@@ -8,7 +8,7 @@ module.exports = function(sequelize, DataTypes) {
     location: {
       type: DataTypes.STRING(100),
       allowNull: false,
-      unique: false,
+      unique: true,
     },
     funding_target: {
       type: DataTypes.DOUBLE,
@@ -24,6 +24,7 @@ module.exports = function(sequelize, DataTypes) {
     expiration_date: {
       type: DataTypes.DATE,
       allowNull: true,
+      defaultValue: new Date().setDate(new Date().getDate() + 7),
       unique: false,
     },
   }, {
