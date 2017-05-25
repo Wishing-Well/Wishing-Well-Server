@@ -13,6 +13,7 @@ const LOGIN_INVALID = 'LOGIN_INVALID';
 // email validation
 const EMAIL_REGEX = /[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})/gi;
 const EMAIL_MAX_LENGTH = 100;
+const EMAIL_MIN_LENGTH = 0;
 const EMAIL_FORBIDDEN_WORD = 'EMAIL_FORBIDDEN_WORD';
 const EMAIL_INVALID_STRING_FORMAT = 'EMAIL_INVALID_STRING_FORMAT';
 const EMAIL_INVALID_LENGTH = 'EMAIL_INVALID_LENGTH';
@@ -23,8 +24,8 @@ function validateEmail(email, res) {
     return false;
   }
 
-  if (email.length > EMAIL_MAX_LENGTH) {
-    res.json({success: false, error: EMAIL_INVALID_LENGTH});
+  if (email.length > EMAIL_MAX_LENGTH || email.length < EMAIL_MIN_LENGTH) {
+    res.json({success: false, error: EMAIL_INVALID_LENGTH, acceptable_length: [EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH]});
     return false;
   }
 
@@ -39,6 +40,7 @@ function validateEmail(email, res) {
 // full_name validation
 const FULL_NAME_REGEX = /^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$/;
 const FULL_NAME_MAX_LENGTH = 50;
+const FULL_NAME_MIN_LENGTH = 0;
 const FULL_NAME_FORBIDDEN_WORD = 'FULL_NAME_FORBIDDEN_WORD';
 const FULL_NAME_INVALID_STRING_FORMAT = 'FULL_NAME_INVALID_STRING_FORMAT';
 const FULL_NAME_INVALID_LENGTH = 'FULL_NAME_INVALID_LENGTH';
@@ -49,8 +51,8 @@ function validateFullName(fullName, res) {
     return false;
   }
 
-  if (fullName.length > FULL_NAME_MAX_LENGTH) {
-    res.json({success: false, error: FULL_NAME_INVALID_LENGTH});
+  if (fullName.length > FULL_NAME_MAX_LENGTH || fullName.length < FULL_NAME_MIN_LENGTH) {
+    res.json({success: false, error: FULL_NAME_INVALID_LENGTH, acceptable_length: [FULL_NAME_MIN_LENGTH, FULL_NAME_MAX_LENGTH]});
     return false;
   }
 
@@ -69,7 +71,7 @@ const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
 
 function validatePassword(password, res) {
   if (password.length > PASSWORD_MAX_LENGTH || password.length < PASSWORD_MIN_LENGTH) {
-    res.json({success: false, error: PASSWORD_INVALID_LENGTH});
+    res.json({success: false, error: PASSWORD_INVALID_LENGTH, acceptable_length: [PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH]});
     return false;
   }
 
