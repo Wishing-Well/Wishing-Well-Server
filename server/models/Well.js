@@ -32,11 +32,6 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: new Date().setDate(new Date().getDate() + 7),
       unique: false,
     },
-    message: {
-      type: DataTypes.STRING(140),
-      allowNull: true,
-      unqiue: false
-    }
   }, {
     classMethods: {
       associate: function(models) {
