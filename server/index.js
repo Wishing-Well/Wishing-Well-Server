@@ -17,11 +17,11 @@ app.use( express.static('public'));
 //To use methodOverride
 app.use(methodOverride('_method'));
 
-//Passport
-passport();
-
 //Redis
 redis();
+
+//Passport
+passport();
 
 // Routes
 const apiRoutes = require('./api/index');

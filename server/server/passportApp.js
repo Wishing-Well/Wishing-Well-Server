@@ -48,6 +48,7 @@ module.exports = () => {
 
   passport.deserializeUser(function(user, done) {
     console.log('deserializing');
+    console.log(user);
                                    // ^ ---------- given from serializeUser
     User.findOne({
       where: {
