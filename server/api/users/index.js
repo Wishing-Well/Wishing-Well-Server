@@ -117,6 +117,14 @@ Users.post('/login',
   }
 );
 
+Users.post('/logout', (req, res) => {
+  req.logout();
+});
+
+Users.get('/loggedin', (req, res) => {
+  res.json({success: req.isAuthenticated()});
+});
+
 Users.delete('/:id', (req, res) => {
   User.destroy({
     where: {

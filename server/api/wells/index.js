@@ -55,19 +55,32 @@ const LOCATION_MAX_LENGTH = 100;
 const LOCATION_MIN_LENGTH = 0;
 const LOCATION_INVALID_STRING_FORMAT = 'LOCATION_INVALID_STRING_FORMAT';
 const LOCATION_INVALID_LENGTH  = 'LOCATION_INVALID_LENGTH';
+const LOCATION_ALREADY_USED = 'LOCATION_ALREADY_USED';
 
 function validateLocation(location, res) {
-  if (!location.match(LOCATION_REGEX)) {
-    res.json({success: false, error: LOCATION_INVALID_STRING_FORMAT});
-    return false;
-  }
+  return new Promise((resolve, reject) => {
 
-  if (location.length > LOCATION_MAX_LENGTH || location.length < LOCATION_MIN_LENGTH) {
-    res.json({success: false, error: LOCATION_INVALID_LENGTH, acceptable_range: [LOCATION_MIN_LENGTH, LOCATION_MAX_LENGTH]});
-    return false;
-  }
+    if (!location.match(LOCATION_REGEX)) {
+      reject({success: false, error: LOCATION_INVALID_STRING_FORMAT});
+    }
 
-  return true;
+    if (location.length > LOCATION_MAX_LENGTH || location.length < LOCATION_MIN_LENGTH) {
+      reject({success: false, error: LOCATION_INVALID_LENGTH, acceptable_range: [LOCATION_MIN_LENGTH, LOCATION_MAX_LENGTH]});
+    }
+
+    Well.findOne({
+      where: {
+        location: location
+      }
+    })
+    .then( (well) => {
+      well === null ? resolve({success: true}) : reject({success: false, error: LOCATION_ALREADY_USED});
+    })
+    .catch( (e) => {
+      console.log(e)
+      reject({success: false, error: SERVER_UNKNOWN_ERROR});
+    });
+  });
 }
 
 // funding_target validation
@@ -109,23 +122,28 @@ Wells.post('/create', (req, res) => {
   console.log(req.body);
   console.log(req.isAuthenticated())
   if (!validateDescription(req.body.description, res)       ||
-      !validateLocation(req.body.location, res)             ||
       !validateTitle(req.body.title, res)                   ||
       !validateFundingTarget(req.body.funding_target, res)) {
     return;
   }
-  Well.create({
-    title: req.body.title,
-    description: req.body.description,
-    location: req.body.location,
-    funding_target: req.body.funding_target,
-    OrganizerId: req.body.organizer_id
+
+  validateLocation(req.body.location)
+  .then( () => {
+    return Well.create({
+      title: req.body.title,
+      description: req.body.description,
+      location: req.body.location,
+      funding_target: req.body.funding_target,
+      OrganizerId: req.body.organizer_id
+    });
   })
   .then( (well) => {
+    console.log('lastthen')
     res.json({success: true, well: well.dataValues});
   })
   .catch( (err) => {
-    res.json({success: false, error: UNKNOWN_SERVER_ERROR});
+    console.log('lastcatch')
+    res.json(err);
   });
 });
 
