@@ -1,8 +1,8 @@
 /*jshint esversion: 6*/
 const express = require('express');
 const app = require('./server/expressApp.js');
-const redis = require('./server/redisApp.js')();
-const passport = require('./server/passportApp.js')();
+const redis = require('./server/redisApp.js');
+const passport = require('./server/passportApp.js');
 let server;
 const path = require('path');
 const bodyParser = require('body-parser');
@@ -16,6 +16,12 @@ app.use( express.static('public'));
 
 //To use methodOverride
 app.use(methodOverride('_method'));
+
+//Redis
+redis();
+
+//Passport
+passport();
 
 // Routes
 const apiRoutes = require('./api/index');

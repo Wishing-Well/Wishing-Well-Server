@@ -1,9 +1,9 @@
 // Init Passport
 const app = require('./expressApp.js');
-const salts = 10;
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const { User } = require('../models');
 
 module.exports = () => {
 
@@ -15,7 +15,7 @@ module.exports = () => {
       console.log('runs before serializing');
       User.findOne({
         where: {
-          username: username
+          email: username
         }
       }).then ( user => {
         if (user === null) {
@@ -42,12 +42,13 @@ module.exports = () => {
     // building the object to serialize to save
     return done(null, {
       id: user.id,
-      username: user.username
+      email: user.email
     });
   });
 
   passport.deserializeUser(function(user, done) {
     console.log('deserializing');
+    console.log(user);
                                    // ^ ---------- given from serializeUser
     User.findOne({
       where: {
@@ -65,7 +66,7 @@ module.exports = () => {
       next();
     }else {
       console.log('you bad!!!!');
-      res.redirect('/login');
+      //res.redirect('/login');
     }
   }
 };
