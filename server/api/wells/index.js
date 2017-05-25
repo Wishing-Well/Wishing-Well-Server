@@ -104,7 +104,7 @@ function validateFundingTarget(fundingTarget, res) {
 
 Wells.get('/', (req, res) => {
   Well.all().then( (wells) => {
-    res.json(wells);
+    res.json({success: true, wells});
   });
 });
 
@@ -114,7 +114,7 @@ Wells.get('/:id', (req, res) => {
       id: req.params.id
     }
   }).then( (well) => {
-    res.json(well);
+    res.json({success: true, well});
   });
 });
 

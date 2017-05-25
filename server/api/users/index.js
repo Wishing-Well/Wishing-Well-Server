@@ -1,7 +1,7 @@
 /*jshint esversion:6*/
 const express = require('express');
 const Users = express.Router();
-const { User } = require('../../models');
+const { User, Well } = require('../../models');
 const bcrypt = require('bcrypt');
 const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
@@ -123,6 +123,22 @@ Users.post('/logout', (req, res) => {
 
 Users.get('/loggedin', (req, res) => {
   res.json({success: req.isAuthenticated()});
+});
+
+Users.get('/:id/wells', (req, res) => {
+  Well.all({
+    where: {
+      OrganizerId: req.params.id
+    }
+  })
+  .then( (wells) => {
+    console.log(wells)
+    res.json({success: true, wells});
+  })
+  .catch( (err) => {
+    console.log(err);
+    res.json({success: false, error: SERVER_UNKNOWN_ERROR});
+  });
 });
 
 Users.delete('/:id', (req, res) => {
