@@ -88,7 +88,8 @@ Users.get('/info', (req, res) => {
   User.findOne({
     where: {
       id: req.user.id
-    }
+    },
+    include: [{model: Well, as: 'Organizer'}]
   })
   .then((user) => {
     res.json({success: true, user: user.dataValues});
