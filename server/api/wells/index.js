@@ -119,13 +119,21 @@ Wells.get('/:id', (req, res) => {
 });
 
 Wells.post('/create', (req, res) => {
-  console.log(req.body);
+  console.log(req.user);
   console.log(req.isAuthenticated())
+
+  if (!req.user) {
+    res.json({success: false, error: USER_NOT_AUTHORIZED});
+    return;
+  }
+
   if (!validateDescription(req.body.description, res)       ||
       !validateTitle(req.body.title, res)                   ||
       !validateFundingTarget(req.body.funding_target, res)) {
     return;
   }
+
+
 
   validateLocation(req.body.location)
   .then( () => {
@@ -134,7 +142,7 @@ Wells.post('/create', (req, res) => {
       description: req.body.description,
       location: req.body.location,
       funding_target: req.body.funding_target,
-      OrganizerId: req.body.organizer_id
+      OrganizerId: req.user.id
     });
   })
   .then( (well) => {
@@ -144,20 +152,6 @@ Wells.post('/create', (req, res) => {
   .catch( (err) => {
     console.log('lastcatch')
     res.json(err);
-  });
-});
-
-Wells.delete('/:id', (req, res) => {
-  Well.destroy({
-    where: {
-      id: req.params.id
-    }
-  })
-  .then( () => {
-    res.json({success: true});
-  })
-  .catch( (err) => {
-    res.json({success: false});
   });
 });
 
