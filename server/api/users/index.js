@@ -1,7 +1,7 @@
 /*jshint esversion:6*/
 const express = require('express');
 const Users = express.Router();
-const { User } = require('../../models');
+const { User, Well } = require('../../models');
 const bcrypt = require('bcrypt');
 const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
@@ -9,6 +9,7 @@ const passport = require('passport');
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
 const REGISTRATION_USER_ALREADY_EXISTS = 'REGISTRATION_USER_ALREADY_EXISTS';
 const LOGIN_INVALID = 'LOGIN_INVALID';
+const USER_NOT_AUTHORIZED = 'USER_NOT_AUTHORIZED';
 
 // email validation
 const EMAIL_REGEX = /[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})/gi;
@@ -78,6 +79,25 @@ function validatePassword(password, res) {
   return true;
 }
 
+Users.get('/info', (req, res) => {
+
+  if (!req.user) {
+    return res.json({success: false, error: USER_NOT_AUTHORIZED});
+  }
+
+  User.findOne({
+    where: {
+      id: req.user.id
+    }
+  })
+  .then((user) => {
+    res.json({success: true, user: user.dataValues});
+  })
+  .catch((err) => {
+    res.json({success: false, error: SERVER_UNKNOWN_ERROR});
+  });
+});
+
 Users.post('/create', (req, res) => {
   if (!validateEmail(req.body.email, res)        ||
       !validateFullName(req.body.full_name, res) ||
@@ -117,17 +137,28 @@ Users.post('/login',
   }
 );
 
-Users.delete('/:id', (req, res) => {
-  User.destroy({
+Users.post('/logout', (req, res) => {
+  req.logout();
+  res.json({success: true});
+});
+
+Users.get('/loggedin', (req, res) => {
+  res.json({success: req.isAuthenticated()});
+});
+
+Users.get('/:id/wells', (req, res) => {
+  Well.all({
     where: {
-      id: req.params.id
+      OrganizerId: req.params.id
     }
   })
-  .then( () => {
-    res.json({success: true});
+  .then( (wells) => {
+    console.log(wells)
+    res.json({success: true, wells});
   })
   .catch( (err) => {
-    res.json({success: false});
+    console.log(err);
+    res.json({success: false, error: SERVER_UNKNOWN_ERROR});
   });
 });
 

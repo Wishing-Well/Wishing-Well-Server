@@ -1,7 +1,7 @@
 module.exports = function(sequelize, DataTypes) {
   var Message = sequelize.define("Message", {
     message: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.STRING(140),
       allowNull: false,
     },
     featured: {
@@ -12,7 +12,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Message.belongsTo(models.User);
+        Message.belongsTo(models.User, {
+          as: 'Author'
+        });
         Message.belongsTo(models.Well);
       }
     }
