@@ -10,6 +10,7 @@ const USER_NOT_AUTHORIZED = 'USER_NOT_AUTHORIZED';
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
 const USER_ALREADY_HAS_WELL = 'USER_ALREADY_HAS_WELL';
 const USER_NOT_ENOUGH_MONEY = 'USER_NOT_ENOUGH_MONEY';
+const USER_DONATED_NEGATIVE_OR_ZERO_MONEY = 'USER_DONATED_NEGATIVE_OR_ZERO_MONEY';
 
 // title validation
 const TITLE_MAX_LENGTH = 50;
@@ -181,7 +182,9 @@ Wells.put('/donate', (req, res) => {
   .then( () => findUser(req) )
   .then( user => {
     return new Promise((resolve, reject) => {
-      if (req.body.amount > user.dataValues.coin_inventory) {
+      console.log(req.body.amount, user.dataValues)
+      if (Number(req.body.amount) <= 0) reject({success: false, error: USER_DONATED_NEGATIVE_OR_ZERO_MONEY});
+      if (Number(req.body.amount) > user.dataValues.coin_inventory) {
         reject({success: false, error: USER_NOT_ENOUGH_MONEY});
       }
       req.body.user = user;
@@ -197,8 +200,6 @@ Wells.put('/donate', (req, res) => {
     });
   })
   .then( () => {
-    req.body.user.coin_inventory -= req.body.amount;
-    req.body.user.amount_donated += Number(req.body.amount);
     return User.update(
       { coin_inventory: req.body.user.coin_inventory - req.body.amount,
         amount_donated: req.body.user.amount_donated + Number(req.body.amount) },
@@ -206,13 +207,15 @@ Wells.put('/donate', (req, res) => {
     );
   })
   .then( () => {
-    req.body.well.current_amount += Number(req.body.amount);
     return Well.update(
       { current_amount: req.body.well.current_amount + Number(req.body.amount) },
       { where: {id: req.body.id} }
     );
   })
   .then( () => {
+    req.body.user.coin_inventory -= req.body.amount;
+    req.body.user.amount_donated += Number(req.body.amount);
+    req.body.well.current_amount += Number(req.body.amount);
     res.json({success: true, user: req.body.user, well: req.body.well});
   })
   .catch( (err) => {
