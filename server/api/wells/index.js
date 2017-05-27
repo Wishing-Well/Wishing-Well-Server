@@ -3,12 +3,13 @@
 /*jshint esversion:6*/
 const express = require('express');
 const Wells = express.Router();
-const { Well } = require('../../models');
+const { Well, User } = require('../../models');
 const {BANNED_WORDS} = require('../../server/constants');
 
 const USER_NOT_AUTHORIZED = 'USER_NOT_AUTHORIZED';
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
 const USER_ALREADY_HAS_WELL = 'USER_ALREADY_HAS_WELL';
+const USER_NOT_ENOUGH_MONEY = 'USER_NOT_ENOUGH_MONEY';
 
 // title validation
 const TITLE_MAX_LENGTH = 50;
@@ -120,6 +121,19 @@ const findUserWell = req =>
     }
   });
 
+const findUser = req =>
+  User.findOne({
+    where: {
+      id: req.user.id
+    }
+  });
+
+const findWell = req =>
+  Well.findOne({
+    where: {
+      id: req.body.id
+    }
+  });
 
 
 Wells.get('/', (req, res) => {
@@ -159,6 +173,56 @@ Wells.post('/create', (req, res) => {
   .catch( (err) => {
     console.log(err)
     res.json(err);
+  });
+});
+
+Wells.put('/donate', (req, res) => {
+  isUserAuthorized(req)
+  .then( () => findUser(req) )
+  .then( user => {
+    return new Promise((resolve, reject) => {
+      if (req.body.amount > user.dataValues.coin_inventory) {
+        reject({success: false, error: USER_NOT_ENOUGH_MONEY});
+      }
+      req.body.user = user;
+      resolve();
+    });
+  })
+  .then ( () => findWell(req))
+  .then( well => {
+    return new Promise((resolve, reject) => {
+      if (!well) reject({success: false, error: WELL_DOES_NOT_EXIST});
+      req.body.well = well;
+      resolve();
+    });
+  })
+  .then( () => {
+    req.body.user.coin_inventory -= req.body.amount;
+    req.body.user.amount_donated += Number(req.body.amount);
+    return User.update(
+      { coin_inventory: req.body.user.coin_inventory - req.body.amount,
+        amount_donated: req.body.user.amount_donated + Number(req.body.amount) },
+      { where: {id: req.user.id} }
+    );
+  })
+  .then( () => {
+    req.body.well.current_amount += Number(req.body.amount);
+    return Well.update(
+      { current_amount: req.body.well.current_amount + Number(req.body.amount) },
+      { where: {id: req.body.id} }
+    );
+  })
+  .then( () => {
+    res.json({success: true, user: req.body.user, well: req.body.well});
+  })
+  .catch( (err) => {
+    if (typeof err !== 'string') {
+      console.log(err);
+      res.json({success: false, error: SERVER_UNKNOWN_ERROR});
+    } else {
+      console.log(err);
+      res.json(err);
+    }
   });
 });
 
