@@ -3,7 +3,7 @@
 /*jshint esversion:6*/
 const express = require('express');
 const Wells = express.Router();
-const { Well, User } = require('../../models');
+const { Well, User, Donation } = require('../../models');
 const {BANNED_WORDS} = require('../../server/constants');
 
 const USER_NOT_AUTHORIZED = 'USER_NOT_AUTHORIZED';
@@ -110,6 +110,13 @@ const createWell = req =>
     OrganizerId: req.user.id
   });
 
+const createDonation = req =>
+  Donation.create({
+    Donor: req.user.id,
+    amount: req.body.amount,
+    donated_to: req.body.id,
+  });
+
 const isUserAuthorized = req =>
   new Promise((resolve, reject) => {
     req.user ? resolve() : reject({success: false, error: USER_NOT_AUTHORIZED});
@@ -201,11 +208,11 @@ Wells.put('/donate', (req, res) => {
   })
   .then( () => {
     return User.update(
-      { coin_inventory: req.body.user.coin_inventory - req.body.amount,
-        amount_donated: req.body.user.amount_donated + Number(req.body.amount) },
+      { coin_inventory: req.body.user.coin_inventory - req.body.amount},
       { where: {id: req.user.id} }
     );
   })
+  .then( () => createDonation(req) )
   .then( () => {
     return Well.update(
       { current_amount: req.body.well.current_amount + Number(req.body.amount) },
@@ -219,7 +226,7 @@ Wells.put('/donate', (req, res) => {
     res.json({success: true, user: req.body.user, well: req.body.well});
   })
   .catch( (err) => {
-    if (typeof err !== 'string') {
+    if (typeof err.error !== 'string') {
       console.log(err);
       res.json({success: false, error: SERVER_UNKNOWN_ERROR});
     } else {

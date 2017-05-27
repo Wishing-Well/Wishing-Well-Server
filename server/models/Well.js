@@ -35,10 +35,10 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Well.hasMany(models.Throw);
-        Well.hasOne(models.Message);
+        Well.hasMany(models.Donation);
+        Well.hasMany(models.Message);
         Well.belongsTo(models.User,{
-          as: 'Organizer',
+          as: 'organizer',
         });
       }
     }

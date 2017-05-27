@@ -1,7 +1,7 @@
 /*jshint esversion:6*/
 const express = require('express');
 const Users = express.Router();
-const { User, Well } = require('../../models');
+const { User, Well, Donation } = require('../../models');
 const bcrypt = require('bcrypt');
 const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
@@ -89,12 +89,13 @@ Users.get('/info', (req, res) => {
     where: {
       id: req.user.id
     },
-    include: [{model: Well, as: 'Organizer'}]
+    include: [{model: Well, as: 'wells'}, {model: Donation, as: 'donations'}]
   })
   .then((user) => {
     res.json({success: true, user: user.dataValues});
   })
   .catch((err) => {
+    console.log(err)
     res.json({success: false, error: SERVER_UNKNOWN_ERROR});
   });
 });

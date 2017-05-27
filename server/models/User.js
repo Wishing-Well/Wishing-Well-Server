@@ -22,13 +22,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     coin_inventory: {
       type: DataTypes.INTEGER,
-      defaultValue: 2000,
-      allowNull: true,
-      unique: false,
-    },
-    amount_donated: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
+      defaultValue: 2147483647,
       allowNull: true,
       unique: false,
     },
@@ -39,10 +33,10 @@ module.exports = function(sequelize, DataTypes) {
           as: 'Author',
         });
         User.hasMany(models.Well, {
-          as: 'Organizer',
+          as: 'wells',
         });
-        User.hasMany(models.Throw, {
-          as: 'Donor',
+        User.hasMany(models.Donation, {
+          as: 'donations',
         });
       }
     }
