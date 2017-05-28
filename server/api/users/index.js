@@ -9,7 +9,7 @@ const passport = require('passport');
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
 const REGISTRATION_USER_ALREADY_EXISTS = 'REGISTRATION_USER_ALREADY_EXISTS';
 const LOGIN_INVALID = 'LOGIN_INVALID';
-const USER_NOT_AUTHORIZED = 'USER_NOT_AUTHORIZED';
+const USER_NOT_AUTHENTICATED = 'USER_NOT_AUTHENTICATED';
 
 // email validation
 const EMAIL_REGEX = /[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})/gi;
@@ -19,24 +19,29 @@ const EMAIL_FORBIDDEN_WORD = 'EMAIL_FORBIDDEN_WORD';
 const EMAIL_INVALID_STRING_FORMAT = 'EMAIL_INVALID_STRING_FORMAT';
 const EMAIL_INVALID_LENGTH = 'EMAIL_INVALID_LENGTH';
 
-function validateEmail(email, res) {
-  if (!email.match(EMAIL_REGEX)) {
-    res.json({success: false, error: EMAIL_INVALID_STRING_FORMAT});
-    return false;
-  }
+/**
+ * Validates if email is a valid argument
+ * @param {String} email
+ * @param {Object} res
+ * @return Promise
+ */
+const validateEmail = (email, res) =>
+  new Promise((resolve, reject) => {
+    if (!email.match(EMAIL_REGEX)) {
+      reject({success: false, error: EMAIL_INVALID_STRING_FORMAT});
+    }
 
-  if (email.length > EMAIL_MAX_LENGTH || email.length < EMAIL_MIN_LENGTH) {
-    res.json({success: false, error: EMAIL_INVALID_LENGTH, acceptable_length: [EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH]});
-    return false;
-  }
+    if (email.length > EMAIL_MAX_LENGTH || email.length < EMAIL_MIN_LENGTH) {
+      reject({success: false, error: EMAIL_INVALID_LENGTH, acceptable_length: [EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH]});
+    }
 
-  if (BANNED_WORDS.some(v => email.toLowerCase().indexOf(v) !== -1)) {
-    res.json({success: false, error: EMAIL_FORBIDDEN_WORD});
-    return false;
-  }
+    if (BANNED_WORDS.some(v => email.toLowerCase().indexOf(v) !== -1)) {
+      reject({success: false, error: EMAIL_FORBIDDEN_WORD});
+    }
 
-  return true;
-}
+    resolve();
+  });
+
 
 // full_name validation
 const FULL_NAME_REGEX = /^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$/;
@@ -46,43 +51,69 @@ const FULL_NAME_FORBIDDEN_WORD = 'FULL_NAME_FORBIDDEN_WORD';
 const FULL_NAME_INVALID_STRING_FORMAT = 'FULL_NAME_INVALID_STRING_FORMAT';
 const FULL_NAME_INVALID_LENGTH = 'FULL_NAME_INVALID_LENGTH';
 
-function validateFullName(fullName, res) {
-  if (!FULL_NAME_REGEX.test(fullName)) {
-    res.json({success: false, error: FULL_NAME_INVALID_STRING_FORMAT});
-    return false;
-  }
+/**
+ * Validates if full name is a valid argument
+ * @param {String} fullName
+ * @param {Object} res
+ * @return Promise
+ */
+const validateFullName = (fullName, res) =>
+  new Promise((resolve, reject) => {
+    if (!FULL_NAME_REGEX.test(fullName)) {
+      reject({success: false, error: FULL_NAME_INVALID_STRING_FORMAT});
+    }
 
-  if (fullName.length > FULL_NAME_MAX_LENGTH || fullName.length < FULL_NAME_MIN_LENGTH) {
-    res.json({success: false, error: FULL_NAME_INVALID_LENGTH, acceptable_length: [FULL_NAME_MIN_LENGTH, FULL_NAME_MAX_LENGTH]});
-    return false;
-  }
+    if (fullName.length > FULL_NAME_MAX_LENGTH || fullName.length < FULL_NAME_MIN_LENGTH) {
+      reject({success: false, error: FULL_NAME_INVALID_LENGTH, acceptable_length: [FULL_NAME_MIN_LENGTH, FULL_NAME_MAX_LENGTH]});
+    }
 
-  if (BANNED_WORDS.some(v => fullName.toLowerCase().indexOf(v) !== -1)) {
-    res.json({success: false, error: FULL_NAME_FORBIDDEN_WORD});
-    return false;
-  }
+    if (BANNED_WORDS.some(v => fullName.toLowerCase().indexOf(v) !== -1)) {
+      reject({success: false, error: FULL_NAME_FORBIDDEN_WORD});
+    }
 
-  return true;
-}
+    resolve();
+  });
 
 // password validation
 const PASSWORD_MAX_LENGTH = 500;
 const PASSWORD_MIN_LENGTH = 6;
 const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
 
-function validatePassword(password, res) {
-  if (password.length > PASSWORD_MAX_LENGTH || password.length < PASSWORD_MIN_LENGTH) {
-    res.json({success: false, error: PASSWORD_INVALID_LENGTH, acceptable_length: [PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH]});
-    return false;
-  }
+/**
+ * Validates if password is a valid argument
+ * @param {String} password
+ * @param {Object} res
+ * @return Promise
+ */
+const validatePassword = (password, res) =>
+  new Promise((resolve, reject) => {
+    if (password.length > PASSWORD_MAX_LENGTH || password.length < PASSWORD_MIN_LENGTH) {
+      reject({success: false, error: PASSWORD_INVALID_LENGTH, acceptable_length: [PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH]});
+    }
 
-  return true;
-}
+    resolve();
+  });
 
+/**
+ * Checks if user object was added to req (should be added by /server/server/passportApp)
+ * @param {Object} req
+ * @return Promise
+ */
+const isUserAuthenticated = req =>
+  new Promise((resolve, reject) => {
+    req.user ? resolve() : reject({success: false, error: USER_NOT_AUTHENTICATED});
+  });
+
+/* API endpoint.
+ * Finds user info for currently logged-in user.
+ * @param {Object} req
+ * @param {Object} res
+ * @return void
+ */
 Users.get('/info', (req, res) => {
 
   if (!req.user) {
-    return res.json({success: false, error: USER_NOT_AUTHORIZED});
+    return res.json({success: false, error: USER_NOT_AUTHENTICATED});
   }
 
   User.findOne({
@@ -95,73 +126,81 @@ Users.get('/info', (req, res) => {
     res.json({success: true, user: user.dataValues});
   })
   .catch((err) => {
-    console.log(err)
+    console.log(err, 'api/users/info GET failed');
     res.json({success: false, error: SERVER_UNKNOWN_ERROR});
   });
 });
 
+/* API endpoint.
+ * Creates a well
+ * @param {Object} req
+ * @param {Object} res
+ * @return void
+ */
 Users.post('/create', (req, res) => {
-  if (!validateEmail(req.body.email, res)        ||
-      !validateFullName(req.body.full_name, res) ||
-      !validatePassword(req.body.password, res)) {
-    return;
-  }
-  bcrypt.genSalt(saltRounds, function(err, salt) {
-    bcrypt.hash(req.body.password, salt, function(err, hash) {
-      User.create({
-        email: req.body.email.toLowerCase(),
-        full_name: req.body.full_name,
-        password: hash
-      })
-      .then( (user) => {
-        res.json({success: true, user: user.dataValues});
-      })
-      .catch((err) => {
-        res.json({success: false, error: REGISTRATION_USER_ALREADY_EXISTS});
+  validateEmail(req.body.email, res)
+  .then( () => validateFullName(req.body.full_name, res) )
+  .then( () => validatePassword(req.body.password, res) )
+  .then( () => {
+    bcrypt.genSalt(saltRounds, function(err, salt) {
+      bcrypt.hash(req.body.password, salt, function(err, hash) {
+        User.create({
+          email: req.body.email.toLowerCase(),
+          full_name: req.body.full_name,
+          password: hash
+        })
+        .then( (user) => {
+          res.json({success: true, user: user.dataValues});
+        })
+        .catch((err) => {
+          console.log(err, 'api/users/create POST failed');
+          res.json({success: false, error: REGISTRATION_USER_ALREADY_EXISTS});
+        });
       });
     });
+  })
+  .catch( (err) => {
+    console.log(err, 'api/users/create POST failed');
+    res.json(err);
   });
 });
 
+/* API endpoint.
+ * Logs a user in with an email and password.
+ * @param {Object} req
+ * @param {Object} res
+ * @return void
+ */
 Users.post('/login',
   passport.authenticate('local', { failWithError: true }),
   function(req, res, next) {
-    User.findOne({
-      where: {
-        email: req.body.username.toLowerCase()
-      }
-    }).then( (user) => {
-      res.json({success: true, user: user.dataValues});
-    });
+    res.redirect('info');
   },
   function(err, req, res, next) {
+    console.log(err, 'api/users/login POST failed');
     return res.json({success: false, error: LOGIN_INVALID});
   }
 );
 
+/* API endpoint.
+ * Logs current user out.
+ * @param {Object} req
+ * @param {Object} res
+ * @return void
+ */
 Users.post('/logout', (req, res) => {
   req.logout();
   res.json({success: true});
 });
 
+/* API endpoint.
+ * Returns if user is currently logged into server or not.
+ * @param {Object} req
+ * @param {Object} res
+ * @return void
+ */
 Users.get('/loggedin', (req, res) => {
   res.json({success: req.isAuthenticated()});
-});
-
-Users.get('/:id/wells', (req, res) => {
-  Well.all({
-    where: {
-      OrganizerId: req.params.id
-    }
-  })
-  .then( (wells) => {
-    console.log(wells)
-    res.json({success: true, wells});
-  })
-  .catch( (err) => {
-    console.log(err);
-    res.json({success: false, error: SERVER_UNKNOWN_ERROR});
-  });
 });
 
 module.exports = Users;

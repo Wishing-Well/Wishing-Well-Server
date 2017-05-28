@@ -30,7 +30,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         User.hasMany(models.Message, {
-          as: 'Author',
+          as: 'messages',
         });
         User.hasMany(models.Well, {
           as: 'wells',
