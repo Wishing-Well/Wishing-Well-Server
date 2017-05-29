@@ -32,12 +32,8 @@ module.exports = function(sequelize, DataTypes) {
         User.hasMany(models.Message, {
           as: 'messages',
         });
-        User.hasMany(models.Well, {
-          as: 'wells',
-        });
-        User.hasMany(models.Donation, {
-          as: 'donations',
-        });
+        User.hasMany(models.Well);
+        User.hasMany(models.Donation);
       }
     }
   });

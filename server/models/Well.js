@@ -37,9 +37,7 @@ module.exports = function(sequelize, DataTypes) {
       associate: function(models) {
         Well.hasMany(models.Donation);
         Well.hasMany(models.Message);
-        Well.belongsTo(models.User,{
-          as: 'organizer',
-        });
+        Well.belongsTo(models.User);
       }
     }
   });

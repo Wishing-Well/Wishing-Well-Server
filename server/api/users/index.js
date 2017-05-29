@@ -6,18 +6,32 @@ const bcrypt = require('bcrypt');
 const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
 
+// Universal errors
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
 const REGISTRATION_USER_ALREADY_EXISTS = 'REGISTRATION_USER_ALREADY_EXISTS';
 const LOGIN_INVALID = 'LOGIN_INVALID';
 const USER_NOT_AUTHENTICATED = 'USER_NOT_AUTHENTICATED';
-
+// Validations and specific errors
 // email validation
-const EMAIL_REGEX = /[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})/gi;
+// EMAIL_REGEX matches a person's email, e.g. "JohnSmith@Gmail.com"
+const EMAIL_REGEX = /[a-z0-9]+[_a-z0-9\.-]*[a-z0-9]+@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,4})/i;
 const EMAIL_MAX_LENGTH = 100;
 const EMAIL_MIN_LENGTH = 0;
 const EMAIL_FORBIDDEN_WORD = 'EMAIL_FORBIDDEN_WORD';
 const EMAIL_INVALID_STRING_FORMAT = 'EMAIL_INVALID_STRING_FORMAT';
 const EMAIL_INVALID_LENGTH = 'EMAIL_INVALID_LENGTH';
+// full_name validation
+// FULL_NAME_REGEX matches a person's full name, e.g. "John Smith"
+const FULL_NAME_REGEX = /^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$/;
+const FULL_NAME_MAX_LENGTH = 50;
+const FULL_NAME_MIN_LENGTH = 0;
+const FULL_NAME_FORBIDDEN_WORD = 'FULL_NAME_FORBIDDEN_WORD';
+const FULL_NAME_INVALID_STRING_FORMAT = 'FULL_NAME_INVALID_STRING_FORMAT';
+const FULL_NAME_INVALID_LENGTH = 'FULL_NAME_INVALID_LENGTH';
+// password validation
+const PASSWORD_MAX_LENGTH = 500;
+const PASSWORD_MIN_LENGTH = 6;
+const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
 
 /**
  * Validates if email is a valid argument
@@ -42,15 +56,6 @@ const validateEmail = (email, res) =>
     resolve();
   });
 
-
-// full_name validation
-const FULL_NAME_REGEX = /^[A-Za-z\s]{1,}[\.]{0,1}[A-Za-z\s]{0,}$/;
-const FULL_NAME_MAX_LENGTH = 50;
-const FULL_NAME_MIN_LENGTH = 0;
-const FULL_NAME_FORBIDDEN_WORD = 'FULL_NAME_FORBIDDEN_WORD';
-const FULL_NAME_INVALID_STRING_FORMAT = 'FULL_NAME_INVALID_STRING_FORMAT';
-const FULL_NAME_INVALID_LENGTH = 'FULL_NAME_INVALID_LENGTH';
-
 /**
  * Validates if full name is a valid argument
  * @param {String} fullName
@@ -73,11 +78,6 @@ const validateFullName = (fullName, res) =>
 
     resolve();
   });
-
-// password validation
-const PASSWORD_MAX_LENGTH = 500;
-const PASSWORD_MIN_LENGTH = 6;
-const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
 
 /**
  * Validates if password is a valid argument
@@ -120,7 +120,7 @@ Users.get('/info', (req, res) => {
     where: {
       id: req.user.id
     },
-    include: [{model: Well, as: 'wells'}, {model: Donation, as: 'donations'}]
+    include: [{model: Well}, {model: Donation}]
   })
   .then((user) => {
     res.json({success: true, user: user.dataValues});
@@ -132,7 +132,7 @@ Users.get('/info', (req, res) => {
 });
 
 /* API endpoint.
- * Creates a well
+ * Creates a user
  * @param {Object} req
  * @param {Object} res
  * @return void

@@ -6,18 +6,36 @@ const Wells = express.Router();
 const { Well, User, Donation, Message } = require('../../models');
 const {BANNED_WORDS} = require('../../server/constants');
 
+// Universal errors
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
 const USER_NOT_AUTHENTICATED = 'USER_NOT_AUTHENTICATED';
 const USER_ALREADY_HAS_WELL = 'USER_ALREADY_HAS_WELL';
 const USER_NOT_ENOUGH_MONEY = 'USER_NOT_ENOUGH_MONEY';
 const USER_DONATED_NEGATIVE_OR_ZERO_MONEY = 'USER_DONATED_NEGATIVE_OR_ZERO_MONEY';
 const WELL_NOT_FOUND = 'WELL_NOT_FOUND';
-
+// Validations and specific errors
 // title validation
 const TITLE_MAX_LENGTH = 50;
 const TITLE_MIN_LENGTH = 4;
 const TITLE_FORBIDDEN_WORD = 'TITLE_FORBIDDEN_WORD';
 const TITLE_INVALID_LENGTH = 'TITLE_INVALID_LENGTH';
+// description validation
+const DESCRIPTION_MAX_LENGTH = 1000;
+const DESCRIPTION_MIN_LENGTH = 0;
+const DESCRIPTION_FORBIDDEN_WORD = 'DESCRIPTION_FORBIDDEN_WORD';
+const DESCRIPTION_INVALID_LENGTH = 'DESCRIPTION_INVALID_LENGTH';
+// location validation
+// LOCATION_REGEX matches a CSV geometric point, e.g. "90.2,23.12312"
+const LOCATION_REGEX = /[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)/g;
+const LOCATION_MAX_LENGTH = 100;
+const LOCATION_MIN_LENGTH = 0;
+const LOCATION_INVALID_STRING_FORMAT = 'LOCATION_INVALID_STRING_FORMAT';
+const LOCATION_INVALID_LENGTH  = 'LOCATION_INVALID_LENGTH';
+const LOCATION_ALREADY_USED = 'LOCATION_ALREADY_USED';
+// funding_target validation
+const FUNDING_TARGET_MAX_VALUE = 10000;
+const FUNDING_TARGET_INVALID_NUMBER = 'FUNDINGTARGET_INVALID_NUMBER';
+const FUNDING_TARGET_INVALID_VALUE = 'FUNDINGTARGET_INVALID_VALUE';
 
 /**
  * Validates if title is a valid argument
@@ -38,12 +56,6 @@ const validateTitle = (title, res) =>
     resolve();
   });
 
-// description validation
-const DESCRIPTION_MAX_LENGTH = 1000;
-const DESCRIPTION_MIN_LENGTH = 0;
-const DESCRIPTION_FORBIDDEN_WORD = 'DESCRIPTION_FORBIDDEN_WORD';
-const DESCRIPTION_INVALID_LENGTH = 'DESCRIPTION_INVALID_LENGTH';
-
 /**
  * Validates if description is a valid argument
  * @param {String} description
@@ -62,15 +74,6 @@ const validateDescription = (description, res) =>
 
     resolve();
   });
-
-// location validation
-// LOCATION_REGEX matches a CSV geometric point, e.g. "90.2,23.12312"
-const LOCATION_REGEX = /[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)/g;
-const LOCATION_MAX_LENGTH = 100;
-const LOCATION_MIN_LENGTH = 0;
-const LOCATION_INVALID_STRING_FORMAT = 'LOCATION_INVALID_STRING_FORMAT';
-const LOCATION_INVALID_LENGTH  = 'LOCATION_INVALID_LENGTH';
-const LOCATION_ALREADY_USED = 'LOCATION_ALREADY_USED';
 
 /**
  * Validates if location is a valid argument
@@ -103,11 +106,6 @@ const validateLocation = (location, res) =>
     });
   });
 
-// funding_target validation
-const FUNDING_TARGET_MAX_VALUE = 10000;
-const FUNDING_TARGET_INVALID_NUMBER = 'FUNDINGTARGET_INVALID_NUMBER';
-const FUNDING_TARGET_INVALID_VALUE = 'FUNDINGTARGET_INVALID_VALUE';
-
 /**
  * Validates if funding target is a valid argument
  * @param {Number} fundingTarget
@@ -139,7 +137,7 @@ const createWell = req =>
     description: req.body.description,
     location: req.body.location,
     funding_target: req.body.funding_target,
-    organizerId: req.user.id
+    UserId: req.user.id
   });
 
 /**
@@ -149,9 +147,9 @@ const createWell = req =>
  */
 const createDonation = req =>
   Donation.create({
-    donor: req.user.id,
+    UserId: req.user.id,
     amount: req.body.amount,
-    donated_to: req.body.id,
+    WellId: req.body.id,
   });
 
 /**
@@ -173,7 +171,7 @@ const isUserAuthenticated = req =>
 const findUserWell = req =>
   Well.findOne({
     where: {
-      organizerId: req.user.id
+      UserId: req.user.id
     }
   });
 
@@ -259,7 +257,7 @@ Wells.post('/create', (req, res) => {
   .then( () => validateFundingTarget(req.body.funding_target) )
   .then( () => createWell(req) )
   .then( (well) => {
-    res.json({success: true, well: well.dataValues});
+    res.redirect('../users/info');
   })
   .catch( (err) => {
     console.log(err, 'api/wells/create POST failed');

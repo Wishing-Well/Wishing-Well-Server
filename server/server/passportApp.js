@@ -13,9 +13,10 @@ module.exports = () => {
   passport.use(new LocalStrategy (
     function(username, password, done) {
       console.log('runs before serializing');
+      console.log({username, password});
       User.findOne({
         where: {
-          email: username
+          email: username.toLowerCase()
         }
       }).then ( user => {
         if (user === null) {
