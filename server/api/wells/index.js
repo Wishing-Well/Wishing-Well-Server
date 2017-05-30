@@ -154,7 +154,7 @@ const createWell = req =>
       location: req.body.location,
       funding_target: req.body.funding_target,
       UserId: req.user.id,
-      tokenId: acct.id
+      token: acct
     });
   });
 
@@ -318,7 +318,7 @@ Wells.put('/donate', (req, res) => {
       description: "Sample Charge",
       currency: "usd",
       customer: customer.id,
-      destination: req.body.well.tokenId
+      destination: req.body.well.token
     });
   })
   .then( (charge) => { console.log(charge) })
