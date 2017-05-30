@@ -7,7 +7,7 @@ let server;
 const path = require('path');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
-const stripe = require('./server/stripeApp.js')();
+let account;
 
 //To use bodyParser
 app.use(bodyParser.json());

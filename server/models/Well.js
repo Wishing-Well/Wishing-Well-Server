@@ -32,6 +32,10 @@ module.exports = function(sequelize, DataTypes) {
       defaultValue: new Date().setDate(new Date().getDate() + 7),
       unique: false,
     },
+    tokenId: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    }
   }, {
     classMethods: {
       associate: function(models) {

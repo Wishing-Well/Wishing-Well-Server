@@ -5,6 +5,18 @@ const express = require('express');
 const Wells = express.Router();
 const { Well, User, Donation, Message } = require('../../models');
 const {BANNED_WORDS} = require('../../server/constants');
+const STRIPE_SECRET_KEY = require('../../server/stripe_key');
+const STRIPE_PUBLIC_KEY = require('../../server/stripe_public_key');
+const stripe = require("stripe")(STRIPE_SECRET_KEY);
+let stripeAccount;
+
+stripe.accounts.create({
+  country: "US",
+  type: "custom"
+})
+.then(acct => {
+  stripeAccount = acct;
+});
 
 // Universal errors
 const SERVER_UNKNOWN_ERROR = 'SERVER_UNKNOWN_ERROR';
@@ -137,7 +149,8 @@ const createWell = req =>
     description: req.body.description,
     location: req.body.location,
     funding_target: req.body.funding_target,
-    UserId: req.user.id
+    UserId: req.user.id,
+    tokenId: req.body.tokenId
   });
 
 /**
@@ -245,6 +258,7 @@ Wells.get('/:id', (req, res) => {
  * @return void
  */
 Wells.post('/create', (req, res) => {
+  console.log(req.body);
   isUserAuthenticated(req)
   .then( () => findUserWell(req) )
   .then( well => new Promise((resolve, reject) => {
@@ -273,19 +287,9 @@ Wells.post('/create', (req, res) => {
  * @return void
  */
 Wells.put('/donate', (req, res) => {
+
+
   isUserAuthenticated(req)
-  .then( () => findUser(req) )
-  .then( user => {
-    // Check if user has enough money
-    return new Promise((resolve, reject) => {
-      if (Number(req.body.amount) <= 0) reject({success: false, error: USER_DONATED_NEGATIVE_OR_ZERO_MONEY});
-      if (Number(req.body.amount) > user.dataValues.coin_inventory) {
-        reject({success: false, error: USER_NOT_ENOUGH_MONEY});
-      }
-      req.body.user = user;
-      resolve();
-    });
-  })
   .then ( () => findWell(req))
   .then( well => {
     return new Promise((resolve, reject) => {
@@ -296,11 +300,22 @@ Wells.put('/donate', (req, res) => {
     });
   })
   .then( () => {
-    return User.update(
-      { coin_inventory: req.body.user.coin_inventory - req.body.amount},
-      { where: {id: req.user.id} }
-    );
+    return stripe.customers.create({
+      email: req.user.email,
+      source: req.body.token.tokenId,
+
+    });
   })
+  .then( customer => {
+    return stripe.charges.create({
+      amount: Number(req.body.amount),
+      description: "Sample Charge",
+      currency: "usd",
+      customer: customer.id,
+      destination: req.body.well.tokenId
+    });
+  })
+  .then( (charge) => { console.log(charge) })
   .then( () => createDonation(req) )
   .then( () => {
     return Well.update(
