@@ -144,14 +144,20 @@ const validateFundingTarget = (fundingTarget, res) =>
  * @return Promise
  */
 const createWell = req =>
-  Well.create({
-    title: req.body.title,
-    description: req.body.description,
-    location: req.body.location,
-    funding_target: req.body.funding_target,
-    UserId: req.user.id,
-    tokenId: req.body.tokenId
+  stripe.accounts.createExternalAccount(stripeAccount.id,{
+    external_account: req.body.token.tokenId
+  })
+  .then( acct => {
+    return Well.create({
+      title: req.body.title,
+      description: req.body.description,
+      location: req.body.location,
+      funding_target: req.body.funding_target,
+      UserId: req.user.id,
+      tokenId: acct.id
+    });
   });
+
 
 /**
  * Sends a donation creation query.
