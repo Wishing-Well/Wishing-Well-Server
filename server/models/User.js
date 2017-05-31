@@ -34,6 +34,7 @@ module.exports = function(sequelize, DataTypes) {
         });
         User.hasMany(models.Well);
         User.hasMany(models.Donation);
+        User.hasMany(models.Payment);
       }
     }
   });

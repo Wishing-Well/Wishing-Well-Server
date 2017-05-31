@@ -1,7 +1,7 @@
 /*jshint esversion:6*/
 const express = require('express');
 const Users = express.Router();
-const { User, Well, Donation } = require('../../models');
+const { User, Well, Donation, Payment } = require('../../models');
 const bcrypt = require('bcrypt');
 const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
@@ -111,7 +111,7 @@ const isUserAuthenticated = req =>
  * @return void
  */
 Users.get('/info', (req, res) => {
-
+  console.log('gagaanan')
   if (!req.user) {
     return res.json({success: false, error: USER_NOT_AUTHENTICATED});
   }
@@ -120,7 +120,7 @@ Users.get('/info', (req, res) => {
     where: {
       id: req.user.id
     },
-    include: [{model: Well}, {model: Donation}]
+    include: [{model: Well}, {model: Donation}, {model: Payment}]
   })
   .then((user) => {
     res.json({success: true, user: user.dataValues});
