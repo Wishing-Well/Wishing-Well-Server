@@ -52,3 +52,4 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
 /server/server/redis_secret.js
+/server/server/stripe_key.js

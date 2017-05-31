@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
     current_amount: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: 0,
+      defaultValue: 2131321,
       unique: false,
     },
     expiration_date: {
@@ -35,11 +35,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Well.hasMany(models.Throw);
+        Well.hasMany(models.Donation);
         Well.hasOne(models.Message);
-        Well.belongsTo(models.User,{
-          as: 'Organizer',
-        });
+        Well.belongsTo(models.User);
       }
     }
   });
