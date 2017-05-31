@@ -166,7 +166,7 @@ const createWell = req =>
 const createDonation = req =>
   Donation.create({
     UserId: req.user.id,
-    amount: req.body.amount,
+    amount: Number(req.body.amount),
     WellId: req.body.id,
   });
 

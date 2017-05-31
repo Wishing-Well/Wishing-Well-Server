@@ -26,12 +26,6 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: true,
       unique: false,
     },
-    coins_thrown: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      allowNull: true,
-      unique: false,
-    },
   }, {
     classMethods: {
       associate: function(models) {
