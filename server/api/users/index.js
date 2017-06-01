@@ -35,21 +35,20 @@ const PASSWORD_INVALID_LENGTH = 'PASSWORD_INVALID_LENGTH';
 
 /**
  * Validates if email is a valid argument
- * @param {String} email
- * @param {Object} res
+ * @param {Object} req
  * @return Promise
  */
-const validateEmail = (email, res) =>
+const validateEmail = req =>
   new Promise((resolve, reject) => {
-    if (!email.match(EMAIL_REGEX)) {
+    if (!req.body.email.match(EMAIL_REGEX)) {
       reject({success: false, error: EMAIL_INVALID_STRING_FORMAT});
     }
 
-    if (email.length > EMAIL_MAX_LENGTH || email.length < EMAIL_MIN_LENGTH) {
+    if (req.body.email.length > EMAIL_MAX_LENGTH || req.body.email.length < EMAIL_MIN_LENGTH) {
       reject({success: false, error: EMAIL_INVALID_LENGTH, acceptable_length: [EMAIL_MIN_LENGTH, EMAIL_MAX_LENGTH]});
     }
 
-    if (BANNED_WORDS.some(v => email.toLowerCase().indexOf(v) !== -1)) {
+    if (BANNED_WORDS.some(v => req.body.email.toLowerCase().indexOf(v) !== -1)) {
       reject({success: false, error: EMAIL_FORBIDDEN_WORD});
     }
 
@@ -58,21 +57,20 @@ const validateEmail = (email, res) =>
 
 /**
  * Validates if full name is a valid argument
- * @param {String} fullName
- * @param {Object} res
+ * @param {Object} req
  * @return Promise
  */
-const validateFullName = (fullName, res) =>
+const validateFullName = req =>
   new Promise((resolve, reject) => {
-    if (!FULL_NAME_REGEX.test(fullName)) {
+    if (!FULL_NAME_REGEX.test(req.body.full_name)) {
       reject({success: false, error: FULL_NAME_INVALID_STRING_FORMAT});
     }
 
-    if (fullName.length > FULL_NAME_MAX_LENGTH || fullName.length < FULL_NAME_MIN_LENGTH) {
+    if (req.body.full_name.length > FULL_NAME_MAX_LENGTH || req.body.full_name.length < FULL_NAME_MIN_LENGTH) {
       reject({success: false, error: FULL_NAME_INVALID_LENGTH, acceptable_length: [FULL_NAME_MIN_LENGTH, FULL_NAME_MAX_LENGTH]});
     }
 
-    if (BANNED_WORDS.some(v => fullName.toLowerCase().indexOf(v) !== -1)) {
+    if (BANNED_WORDS.some(v => req.body.full_name.toLowerCase().indexOf(v) !== -1)) {
       reject({success: false, error: FULL_NAME_FORBIDDEN_WORD});
     }
 
@@ -81,17 +79,15 @@ const validateFullName = (fullName, res) =>
 
 /**
  * Validates if password is a valid argument
- * @param {String} password
- * @param {Object} res
+ * @param {Object} req
  * @return Promise
  */
-const validatePassword = (password, res) =>
+const validatePassword = req =>
   new Promise((resolve, reject) => {
-    if (password.length > PASSWORD_MAX_LENGTH || password.length < PASSWORD_MIN_LENGTH) {
-      reject({success: false, error: PASSWORD_INVALID_LENGTH, acceptable_length: [PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH]});
-    }
-
-    resolve();
+    (req.body.password.length < PASSWORD_MAX_LENGTH ||
+      req.body.password.length.length > PASSWORD_MIN_LENGTH) ?
+        resolve() :
+          reject({success: false, error: PASSWORD_INVALID_LENGTH, acceptable_length: [PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH]});
   });
 
 /**
@@ -138,9 +134,9 @@ Users.get('/info', (req, res) => {
  * @return void
  */
 Users.post('/create', (req, res) => {
-  validateEmail(req.body.email, res)
-  .then( () => validateFullName(req.body.full_name, res) )
-  .then( () => validatePassword(req.body.password, res) )
+  validateEmail(req)
+  .then( () => validateFullName(req) )
+  .then( () => validatePassword(req) )
   .then( () => {
     bcrypt.genSalt(saltRounds, function(err, salt) {
       bcrypt.hash(req.body.password, salt, function(err, hash) {

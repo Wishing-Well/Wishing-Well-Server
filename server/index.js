@@ -1,26 +1,29 @@
 /*jshint esversion: 6*/
 const express = require('express');
-const app = require('./server/expressApp.js');
-const redis = require('./server/redisApp.js');
-const passport = require('./server/passportApp.js');
+const app = require('./server/expressApp');
+const redis = require('./server/redisApp');
+const passport = require('./server/passportApp');
 let server;
-const path = require('path');
+const wellPruner = require('./middleware/wellPruner');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 
-//To use bodyParser
+// For expiring wells past expiration date
+app.use(wellPruner);
+
+// To use bodyParser
 app.use(bodyParser.json());
 
-//To use static files
+// To use static files
 app.use( express.static('public'));
 
-//To use methodOverride
+// To use methodOverride
 app.use(methodOverride('_method'));
 
-//Redis
+// Redis
 redis();
 
-//Passport
+// Passport
 passport();
 
 // Routes

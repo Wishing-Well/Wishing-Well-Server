@@ -29,6 +29,10 @@ const TITLE_MAX_LENGTH = 50;
 const TITLE_MIN_LENGTH = 4;
 const TITLE_FORBIDDEN_WORD = 'TITLE_FORBIDDEN_WORD';
 const TITLE_INVALID_LENGTH = 'TITLE_INVALID_LENGTH';
+// expiration date validation
+const EXPIRATION_MAX_LENGTH = 30;
+const EXPIRATION_MIN_LENGTH = 1;
+const EXPIRATION_INVALID_LENGTH = 'EXPIRATION_INVALID_LENGTH';
 // description validation
 const DESCRIPTION_MAX_LENGTH = 1000;
 const DESCRIPTION_MIN_LENGTH = 0;
@@ -49,17 +53,16 @@ const FUNDING_TARGET_INVALID_VALUE = 'FUNDINGTARGET_INVALID_VALUE';
 
 /**
  * Validates if title is a valid argument
- * @param {String} title
- * @param {Object} res
+ * @param {Object} req
  * @return Promise
  */
-const validateTitle = (title, res) =>
+const validateTitle = req =>
   new Promise((resolve, reject) => {
-    if (title.length > TITLE_MAX_LENGTH || title.length < TITLE_MIN_LENGTH) {
+    if (req.body.title.length > TITLE_MAX_LENGTH || req.body.title.length < TITLE_MIN_LENGTH) {
       reject({success: false, error: TITLE_INVALID_LENGTH, acceptable_range: [TITLE_MIN_LENGTH, TITLE_MAX_LENGTH]});
     }
 
-    if (BANNED_WORDS.some(v => title.toLowerCase().indexOf(v) !== -1)) {
+    if (BANNED_WORDS.some(v => req.body.title.toLowerCase().indexOf(v) !== -1)) {
       reject({success: false, error: TITLE_FORBIDDEN_WORD});
     }
 
@@ -67,18 +70,28 @@ const validateTitle = (title, res) =>
   });
 
 /**
- * Validates if description is a valid argument
- * @param {String} description
- * @param {Object} res
+ * Validates if expiration is a valid argument
+ * @param {Object} req
  * @return Promise
  */
-const validateDescription = (description, res) =>
+const validateExpirationDate = req =>
   new Promise((resolve, reject) => {
-    if (description.length > DESCRIPTION_MAX_LENGTH || description.length < DESCRIPTION_MIN_LENGTH) {
+    (Number(req.body.time) > EXPIRATION_MIN_LENGTH && Number(req.body.time) < EXPIRATION_MAX_LENGTH) ?
+      resolve() : reject({success: false, error: EXPIRATION_INVALID_LENGTH});
+  });
+
+/**
+ * Validates if description is a valid argument
+ * @param {Object} req
+ * @return Promise
+ */
+const validateDescription = req =>
+  new Promise((resolve, reject) => {
+    if (req.body.description.length > DESCRIPTION_MAX_LENGTH || req.body.description.length < DESCRIPTION_MIN_LENGTH) {
       reject({success: false, error: DESCRIPTION_INVALID_LENGTH, acceptable_range: [DESCRIPTION_MIN_LENGTH, DESCRIPTION_MAX_LENGTH]});
     }
 
-    if (BANNED_WORDS.some(v => description.toLowerCase().indexOf(v) !== -1)) {
+    if (BANNED_WORDS.some(v => req.body.description.toLowerCase().indexOf(v) !== -1)) {
       reject({success: false, error: DESCRIPTION_FORBIDDEN_WORD});
     }
 
@@ -87,25 +100,24 @@ const validateDescription = (description, res) =>
 
 /**
  * Validates if location is a valid argument
- * @param {String} location
- * @param {Object} res
+ * @param {Object} req
  * @return Promise
  */
-const validateLocation = (location, res) =>
+const validateLocation = req =>
   new Promise((resolve, reject) => {
 
-    if (!location.match(LOCATION_REGEX)) {
+    if (!req.body.location.match(LOCATION_REGEX)) {
       reject({success: false, error: LOCATION_INVALID_STRING_FORMAT});
     }
 
-    if (location.length > LOCATION_MAX_LENGTH || location.length < LOCATION_MIN_LENGTH) {
+    if (req.body.location.length > LOCATION_MAX_LENGTH || req.body.location.length < LOCATION_MIN_LENGTH) {
       reject({success: false, error: LOCATION_INVALID_LENGTH, acceptable_range: [LOCATION_MIN_LENGTH, LOCATION_MAX_LENGTH]});
     }
 
     // Check if there is an existing well at this location
     Well.findOne({
       where: {
-        location: location
+        location: req.body.location
       }
     })
     .then( (well) => {
@@ -118,18 +130,17 @@ const validateLocation = (location, res) =>
 
 /**
  * Validates if funding target is a valid argument
- * @param {Number} fundingTarget
- * @param {Object} res
+ * @param {Object} req
  * @return Promise
  */
-const validateFundingTarget = (fundingTarget, res) =>
+const validateFundingTarget = req =>
   new Promise((resolve, reject) => {
 
-    if (isNaN(parseFloat(fundingTarget))) {
+    if (isNaN(parseFloat(req.body.funding_target))) {
       reject({success: false, error: FUNDING_TARGET_INVALID_NUMBER});
     }
 
-    if (parseFloat(fundingTarget) > FUNDING_TARGET_MAX_VALUE) {
+    if (parseFloat(req.body.funding_target) > FUNDING_TARGET_MAX_VALUE) {
       reject({success: false, error: FUNDING_TARGET_INVALID_VALUE});
     }
 
@@ -151,6 +162,7 @@ const createWell = req =>
       description: req.body.description,
       location: req.body.location,
       funding_target: req.body.funding_target,
+      expiration_date: new Date().setDate(new Date().getDate() + Number(req.body.time)),
       UserId: req.user.id,
       token: acct
     })
@@ -198,9 +210,10 @@ const isUserAuthenticated = req =>
  * @return Promise
  */
 const findUserWell = req =>
-  Well.findOne({
+  Well.findAll({
     where: {
-      UserId: req.user.id
+      UserId: req.user.id,
+      expired: false
     }
   });
 
@@ -273,17 +286,17 @@ Wells.get('/:id', (req, res) => {
  * @return void
  */
 Wells.post('/create', (req, res) => {
-  console.log(req.body);
+  console.log(req.body.time)
   isUserAuthenticated(req)
   .then( () => findUserWell(req) )
   .then( well => new Promise((resolve, reject) => {
-    // User is currently allowed only one well, so fail out if we find one
-    !well ? resolve() : reject({success: false, error: USER_ALREADY_HAS_WELL});
+    // User is currently allowed only one well, so fail out if we find one\
+    (!well.length) ? resolve(): reject({success: false, err: USER_ALREADY_HAS_WELL});
   }))
-  .then( () => validateLocation(req.body.location) )
-  .then( () => validateDescription(req.body.description) )
-  .then( () => validateTitle(req.body.title) )
-  .then( () => validateFundingTarget(req.body.funding_target) )
+  .then( () => validateLocation(req) )
+  .then( () => validateDescription(req) )
+  .then( () => validateTitle(req) )
+  .then( () => validateFundingTarget(req) )
   .then( () => createWell(req) )
   .then( (well) => {
     res.redirect('../users/info');

@@ -17,7 +17,7 @@ module.exports = function(sequelize, DataTypes) {
     },
     funding_target: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
       unique: false,
     },
     current_amount: {
@@ -28,10 +28,14 @@ module.exports = function(sequelize, DataTypes) {
     },
     expiration_date: {
       type: DataTypes.DATE,
-      allowNull: true,
-      defaultValue: new Date().setDate(new Date().getDate() + 7),
+      allowNull: false,
       unique: false,
     },
+    expired: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+      defaultValue: false
+    }
   }, {
     classMethods: {
       associate: function(models) {
