@@ -127,6 +127,15 @@ Users.get('/info', (req, res) => {
   });
 });
 
+Users.get('/names', (req, res) => {
+  User.findAll({
+    attributes: ['id', 'full_name']
+  })
+  .then(user => {
+    res.json(user);
+  });
+});
+
 /* API endpoint.
  * Creates a user
  * @param {Object} req
