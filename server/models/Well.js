@@ -40,7 +40,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         Well.hasMany(models.Donation);
-        Well.hasOne(models.Message);
+        Well.hasMany(models.Message);
         Well.belongsTo(models.User);
       }
     }

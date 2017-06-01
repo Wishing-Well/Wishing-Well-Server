@@ -242,6 +242,16 @@ const findWell = req =>
   );
 
 /**
+ * Finds all wells.
+ * @param {Object} req
+ * @return Promise
+ */
+const findAllWells = req =>
+  Well.findAll(
+    { include: [{model: Message}, {model: Donation}]}
+  );
+
+/**
  * API endpoint.
  * Finds all wells.
  * @param {Object} req
@@ -249,7 +259,7 @@ const findWell = req =>
  * @return void
  */
 Wells.get('/', (req, res) => {
-  Well.all()
+  findAllWells()
   .then( (wells) => {
     res.json({success: true, wells});
   })
@@ -316,12 +326,13 @@ Wells.post('/create', (req, res) => {
  */
 Wells.put('/donate', (req, res) => {
 
-
+  console.log(req.body)
   isUserAuthenticated(req)
   .then ( () => findWell(req))
   .then( well =>
     new Promise((resolve, reject) => {
       // Check if well exists
+      console.log('testing')
       if (!well) reject({success: false, error: WELL_DOES_NOT_EXIST});
       req.body.well = well;
       resolve();
