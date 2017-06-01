@@ -8,7 +8,7 @@ process.on('uncaughtException', function (err) {
 });
 
 const server = app.listen(PORT, () => {
-  db.sequelize.sync(/*{force: true}*/);
+  db.sequelize.sync({force: true});
   console.log(`Server started on port ${PORT}`);
 });
 

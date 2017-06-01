@@ -145,17 +145,16 @@ const createWell = req =>
   stripe.accounts.createExternalAccount(stripeAccount.id,{
     external_account: req.body.token.tokenId
   })
-  .then( acct => {
-    console.log(acct)
-    return Well.create({
+  .then( acct =>
+    Well.create({
       title: req.body.title,
       description: req.body.description,
       location: req.body.location,
       funding_target: req.body.funding_target,
       UserId: req.user.id,
       token: acct
-    });
-  });
+    })
+  );
 
 
 /**
@@ -168,6 +167,18 @@ const createDonation = req =>
     UserId: req.user.id,
     amount: Number(req.body.amount),
     WellId: req.body.id,
+  });
+
+/**
+ * Creates a message
+ * @param {Object} req
+ * @return Promise
+ */
+const createMessage = req =>
+  Message.create({
+    UserId: req.user.id,
+    message: req.body.message,
+    WellId: req.body.id
   });
 
 /**
@@ -212,11 +223,10 @@ const findUser = req =>
  * @return Promise
  */
 const findWell = req =>
-  Well.findOne({
-    where: {
-      id: req.body.id
-    },
-  });
+  Well.findOne(
+    { where: {id: req.body.id} },
+    { include: [{model: Message}, {model: Donation}]}
+  );
 
 /**
  * API endpoint.
@@ -296,38 +306,43 @@ Wells.put('/donate', (req, res) => {
 
   isUserAuthenticated(req)
   .then ( () => findWell(req))
-  .then( well => {
-    return new Promise((resolve, reject) => {
+  .then( well =>
+    new Promise((resolve, reject) => {
       // Check if well exists
       if (!well) reject({success: false, error: WELL_DOES_NOT_EXIST});
       req.body.well = well;
       resolve();
-    });
-  })
-  .then( () => {
-    return stripe.customers.create({
+    })
+  )
+  .then( () =>
+    stripe.customers.create({
       email: req.user.email,
       source: req.body.token.tokenId,
-
-    });
-  })
-  .then( customer => {
-    return stripe.charges.create({
+    })
+  )
+  .then( customer =>
+    stripe.charges.create({
       amount: Number(req.body.amount),
       description: "Sample Charge",
       currency: "usd",
       customer: customer.id,
       destination: req.body.well.token
-    });
-  })
+    })
+  )
   .then( (charge) => { console.log(charge) })
   .then( () => createDonation(req) )
   .then( () => {
-    return Well.update(
+    if (Number(req.body.amount) >= 500 && typeof req.body.message === 'string' && req.body.message.length) {
+      return createMessage(req);
+    }
+    return undefined;
+  })
+  .then( () =>
+    Well.update(
       { current_amount: req.body.well.current_amount + Number(req.body.amount) },
       { where: {id: req.body.id} }
-    );
-  })
+    )
+  )
   .then( () => {
     res.redirect('../users/info');
   })

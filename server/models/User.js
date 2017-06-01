@@ -19,13 +19,7 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.STRING(50),
       allowNull: false,
       unique: false,
-    },
-    coin_inventory: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      allowNull: true,
-      unique: false,
-    },
+    }
   }, {
     classMethods: {
       associate: function(models) {

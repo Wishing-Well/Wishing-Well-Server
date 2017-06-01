@@ -1,7 +1,7 @@
 /*jshint esversion:6*/
 const express = require('express');
 const Users = express.Router();
-const { User, Well, Donation } = require('../../models');
+const { User, Well, Donation, Message } = require('../../models');
 const bcrypt = require('bcrypt');
 const {saltRounds, BANNED_WORDS} = require('../../server/constants');
 const passport = require('passport');
@@ -120,7 +120,7 @@ Users.get('/info', (req, res) => {
     where: {
       id: req.user.id
     },
-    include: [{model: Well}, {model: Donation}]
+    include: [{model: Well}, {model: Donation}, {model: Message}]
   })
   .then((user) => {
     res.json({success: true, user: user.dataValues});

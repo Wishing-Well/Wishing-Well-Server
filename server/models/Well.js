@@ -23,7 +23,7 @@ module.exports = function(sequelize, DataTypes) {
     current_amount: {
       type: DataTypes.INTEGER,
       allowNull: true,
-      defaultValue: 2131321,
+      defaultValue: 0,
       unique: false,
     },
     expiration_date: {
