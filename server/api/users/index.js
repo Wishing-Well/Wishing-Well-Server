@@ -131,8 +131,12 @@ Users.get('/names', (req, res) => {
   User.findAll({
     attributes: ['id', 'full_name']
   })
-  .then(user => {
-    res.json(user);
+  .then(users => {
+    res.json({success: true, users});
+  }).
+  catch(err => {
+    console.log(err, 'api/users/names GET failed');
+    res.json({success: false, error: SERVER_UNKNOWN_ERROR});
   });
 });
 
