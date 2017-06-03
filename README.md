@@ -13,3 +13,6 @@ In the server folder, the index.js will run the server.  Use the command below t
 
 ``` nodemon server/index.js ```
 
+##  Notes for DevOps
+Body parser and bcrypt will need to be manually installed from /srv/Wishing-Well-Server.
+
